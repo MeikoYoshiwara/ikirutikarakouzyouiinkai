@@ -1,0 +1,166 @@
+
+/*
+ * 色分けクイズ\nどの色の食品群に分けられる？
+ */
+
+// 読み込む画像, 音
+var ASSETS = {
+    // 'correct_se': 'correct.mp3',
+    // 'incorrect_se': 'incorrect.mp3',
+    'yellow':'http://mainitinetatyou.blog.so-net.ne.jp/_images/blog/_158/mainitinetatyou/m_02428000140.jpg',
+    'red':'http://cdn.slism.jp/2011/05/protein-02.jpg',
+    'houses':'http://www.wanpug.com/illust1822_thumb.gif'　
+};
+
+var BUTTON_WIDTH = 140;
+var BUTTON_HEIGHT = 140;
+var BUTTON1_COLOR ="yellow";
+var BUTTON2_COLOR ="green";
+var BUTTON3_COLOR ="red";
+var BUTTON1_TEXT = "黄"
+var BUTTON2_TEXT = "緑"
+var BUTTON3_TEXT = "赤"
+
+
+
+// 問題のリスト
+var QUESTIONS = [
+    {
+        text: 'たまご',
+        answer: 3,
+    },
+    {
+        text: 'さつまいも',
+        answer: 3,
+    },
+    {
+        text: 'かぼちゃ',
+        answer: 2,
+    },
+   
+];
+
+tm.game.setup({
+    title:"分類クイズ",
+    width:640,
+    height: 960,
+    startLabel: "title",
+});
+
+tm.define("GameScene", {
+    superClass: "Scene",
+
+    init: function() {
+        this.superInit();
+        // スコア用変数
+        this.score = 0;
+        
+        //背景
+        //参照:http://phi-jp.github.io/tmlib.js/tutorial.html
+        this.houses = tm.display.Sprite("houses").addChildTo(this);
+        this.houses.setPosition(340, 860).setScale(2, 2);
+
+
+        // 問題文用ラベル
+        this.questionLabel = Label("").addChildTo(this);// シーンに追加
+        this.questionLabel.x = SCREEN_GRID_X.center();  // x 座標
+        this.questionLabel.y = SCREEN_GRID_Y.span(2);   // y 座標
+        this.questionLabel.fillStyle = "#222";          // 色
+        this.questionLabel.fontSize = 40;               // サイズ
+
+
+     　 this.button1 =  tm.app.GlossyButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON1_COLOR, BUTTON1_TEXT).addChildTo(this);
+        this.button1.position.set(100, SCREEN_CENTER_Y);
+        this.button1.label.setFontSize(40);
+        this.button1.label.fillStyle = "#000";
+        this.button1.alpha=100;
+        // 押下時の処理       
+        this.button1.addEventListener("pointingstart", function(){
+            this.judge(1);
+        }.bind(this))
+        
+        this.button2 =  tm.app.GlossyButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON2_COLOR, BUTTON2_TEXT).addChildTo(this);
+        this.button2.position.set(300, SCREEN_CENTER_Y);
+        this.button2.label.setFontSize(40);
+        this.button2.label.fillStyle = "#000";
+        this.button2.alpha=100;
+        this.button2.addEventListener("pointingstart", function(){
+            this.judge(2);
+        }.bind(this))
+        
+        this.button3 =  tm.app.GlossyButton(BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON3_COLOR, BUTTON3_TEXT).addChildTo(this);
+        this.button3.position.set(500, SCREEN_CENTER_Y);
+        this.button3.label.setFontSize(40);
+        this.button3.label.fillStyle = "#000";
+        this.button3.alpha=100;
+        this.button3.addEventListener("pointingstart", function(){
+            this.judge(3);
+        }.bind(this))
+        
+        
+    },
+
+    onenter: function() {
+        // var scene = CountScene({
+        //     width: SCREEN_WIDTH,
+        //     height: SCREEN_HEIGHT,
+        // });
+        // this.app.pushScene(scene);
+
+        this.setQuestion();
+    },
+
+    update: function(app) {
+        // this.time += app.deltaTime;
+        // var sec = this.time/1000;
+        // this.timerLabel.text = sec.floor();
+
+        return ;
+
+        var key = app.keyboard;
+
+        var text = this.currentLabel.text;
+        var ch = text[0].toLowerCase();
+        if (key.getKeyDown(ch)) {
+            this.currentLabel.text = text.substr(1);
+            SoundManager.play("type");
+
+            if (this.currentLabel.text.length <= 0) {
+                this.setQuestion();
+            }
+        }
+    },
+
+    setQuestion: function() {
+        var q = QUESTIONS.pickup();
+        QUESTIONS.erase(q);
+        this.questionLabel.text = q.text;
+
+        this.questionLabel.alpha = 0;
+        this.questionLabel.tweener.clear().fadeIn(500);
+
+        this.question = q;
+    },
+
+    judge: function(answer) {
+        if (this.question.answer === answer) {
+            this.score++;
+            // SoundManager.play('correct_se');
+            if (QUESTIONS.length <= 0) {
+                this.nextArguments = {
+                    score: this.score,
+                }
+                this.app.popScene();
+            }
+            else {
+                this.setQuestion();
+            }
+        }
+        else {
+            this.score--;
+            // SoundManager.play('incorrect_se');
+        }
+    },
+    
+    
+});
